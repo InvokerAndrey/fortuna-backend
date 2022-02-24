@@ -21,12 +21,14 @@ class Admin(models.Model):
     profit_share = models.DecimalField(max_digits=12, decimal_places=2, default=0)
 
     def __str__(self):
-        return self.user.get_full_name()
+        return self.user.get_full_name() or self.user.username
 
 
 class Player(models.Model):
     """ Расширение таблицы User для Игроков школы """
     user = models.OneToOneField(User, on_delete=models.CASCADE)
+    # Доля профита игрока в %
+    rate = models.IntegerField(default=40)
 
     def __str__(self):
         return self.user.get_full_name()

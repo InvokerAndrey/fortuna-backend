@@ -8,6 +8,7 @@ class PlayerTransaction(models.Model):
     amount = models.DecimalField(max_digits=12, decimal_places=2)
     player = models.ForeignKey(to='users.Player', on_delete=models.CASCADE)
     admin = models.ForeignKey(to='users.Admin', on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
 
 
 class RoomTransaction(models.Model):
@@ -15,3 +16,4 @@ class RoomTransaction(models.Model):
     amount = models.DecimalField(max_digits=12, decimal_places=2)
     player = models.ForeignKey(to='users.Player', on_delete=models.CASCADE)
     room = models.ForeignKey(to='rooms.PlayerRoom', on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
