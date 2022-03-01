@@ -59,22 +59,14 @@ class PlayerListSerializer(serializers.ModelSerializer):
         fields = ['id', 'rate', 'user']
 
 
-class PlayerRoomsSerializer(serializers.ModelSerializer):
+class PlayerDetailsSerializer(serializers.ModelSerializer):
     user = UserSerializer()
     rooms = serializers.SerializerMethodField()
+    player_transactions = serializers.SerializerMethodField()
+    room_transactions = serializers.SerializerMethodField()
 
     def get_rooms(self, obj):
         return PlayerRoomSerializer(obj.playerroom_set.all(), many=True).data
-
-    class Meta:
-        model = Player
-        fields = ['id', 'user', 'rooms']
-
-
-class PlayerTransactionsSerializer(serializers.ModelSerializer):
-    user = UserSerializer()
-    player_transactions = serializers.SerializerMethodField()
-    room_transactions = serializers.SerializerMethodField()
 
     def get_player_transactions(self, obj):
         return PlayerTransactionSerializer(obj.playertransaction_set.all(), many=True).data
@@ -84,4 +76,4 @@ class PlayerTransactionsSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Player
-        fields = ['id', 'user', 'player_transactions', 'room_transactions']
+        fields = ['id', 'user', 'rooms', 'player_transactions', 'room_transactions']

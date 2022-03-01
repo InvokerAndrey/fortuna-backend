@@ -4,9 +4,8 @@ from .models import Admin, Player
 from .serializers import (
     AdminListSerializer,
     PlayerListSerializer,
-    PlayerTransactionsSerializer,
-    PlayerRoomsSerializer,
     UserTokenObtainPairSerializer,
+    PlayerDetailsSerializer,
 )
 from core.views import BaseListView, BaseDetailView
 
@@ -29,14 +28,4 @@ class PlayerListView(BaseListView):
 
 class PlayerDetailView(BaseDetailView):
     model = Player
-    serializer_class = PlayerListSerializer
-
-
-class PlayerRoomListView(BaseDetailView):
-    model = Player
-    serializer_class = PlayerRoomsSerializer
-
-
-class PlayerTransactionListView(BaseDetailView):
-    model = Player
-    serializer_class = PlayerTransactionsSerializer
+    serializer_class = PlayerDetailsSerializer
