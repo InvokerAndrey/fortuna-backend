@@ -12,7 +12,7 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['id', 'first_name', 'last_name', 'full_name', 'email', 'username']
+        fields = ['id', 'first_name', 'last_name', 'full_name', 'email', 'username', 'is_staff']
 
 
 class UserSerializerWithToken(UserSerializer):
@@ -24,7 +24,7 @@ class UserSerializerWithToken(UserSerializer):
 
     class Meta:
         model = User
-        fields = ['id', 'first_name', 'last_name', 'full_name', 'email', 'username', 'token']
+        fields = ['id', 'first_name', 'last_name', 'full_name', 'email', 'username', 'is_staff', 'token']
 
 
 class UserTokenObtainPairSerializer(TokenObtainPairSerializer):
@@ -44,7 +44,7 @@ class FundSerializer(serializers.ModelSerializer):
 
 class AdminListSerializer(serializers.ModelSerializer):
     fund = FundSerializer()
-    user = UserSerializer()
+    user = UserSerializerWithToken()
 
     class Meta:
         model = Admin
@@ -60,7 +60,7 @@ class PlayerListSerializer(serializers.ModelSerializer):
 
 
 class PlayerDetailsSerializer(serializers.ModelSerializer):
-    user = UserSerializer()
+    user = UserSerializerWithToken()
     rooms = serializers.SerializerMethodField()
     player_transactions = serializers.SerializerMethodField()
     room_transactions = serializers.SerializerMethodField()
