@@ -48,7 +48,7 @@ def register_player(request):
     try:
         user = User.objects.create(
             email=data['email'],
-            username=data['username'],
+            username=data['email'],
             first_name=data['first_name'],
             last_name=data['last_name'],
             is_staff=False,
@@ -73,7 +73,7 @@ def register_admin(request):
     try:
         user = User.objects.create(
             email=data['email'],
-            username=data['username'],
+            username=data['email'],
             first_name=data['first_name'],
             last_name=data['last_name'],
             is_staff=True,
