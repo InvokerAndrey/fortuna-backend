@@ -12,7 +12,7 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['id', 'first_name', 'last_name', 'full_name', 'email', 'username']
+        fields = ['id', 'first_name', 'last_name', 'full_name', 'email', 'username', 'is_staff']
 
 
 class UserSerializerWithToken(UserSerializer):
@@ -24,7 +24,7 @@ class UserSerializerWithToken(UserSerializer):
 
     class Meta:
         model = User
-        fields = ['id', 'first_name', 'last_name', 'full_name', 'email', 'username', 'token']
+        fields = ['id', 'first_name', 'last_name', 'full_name', 'email', 'username', 'is_staff', 'token']
 
 
 class UserTokenObtainPairSerializer(TokenObtainPairSerializer):
