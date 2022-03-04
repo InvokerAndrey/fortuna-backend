@@ -1,6 +1,7 @@
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework.permissions import IsAdminUser
 from rest_framework.decorators import api_view, permission_classes
+from django.shortcuts import get_object_or_404
 from django.contrib.auth.models import User
 from django.contrib.auth.hashers import make_password
 from rest_framework.response import Response
@@ -90,3 +91,11 @@ def register_admin(request):
     except IntegrityError:
         message = {'details': 'Такой пользователь уже существует'}
         return Response(message, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['DELETE'])
+@permission_classes([IsAdminUser])
+def delete_player(request, pk):
+    player = get_object_or_404(Player, pk=pk)
+    player.user.delete()
+    return Response(status=status.HTTP_202_ACCEPTED)
