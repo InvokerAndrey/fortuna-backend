@@ -7,6 +7,10 @@ class BaseEnum(enum.Enum):
         return tuple((field.value, field.name) for field in cls)
 
     @classmethod
+    def values(cls):
+        return [field.value for field in cls]
+
+    @classmethod
     def get_name_by_value(cls, value):
         for field in cls:
             if field.value == value:
