@@ -107,3 +107,4 @@ def get_player_profile(request):
     player = request.user.player
     serializer = PlayerDetailsSerializer(player, many=False)
     return Response(serializer.data)
+

@@ -1,11 +1,11 @@
 from django.shortcuts import get_object_or_404
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
-from rest_framework.permissions import IsAdminUser
+from rest_framework.permissions import IsAdminUser, IsAuthenticated
 from rest_framework import status
 
-from .models import Room
-from .serializers import RoomSerializer
+from .models import Room, PlayerRoom
+from .serializers import RoomSerializer, PlayerRoomSerializer
 from core.views import BaseListView, BaseDetailView
 from users.models import Player
 from users.serializers import PlayerListSerializer
@@ -47,3 +47,12 @@ def delete_room(request, pk):
     room = get_object_or_404(Room, pk=pk)
     room.delete()
     return Response(status=status.HTTP_202_ACCEPTED)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_player_rooms(request):
+    player = request.user.player
+    player_rooms = PlayerRoom.objects.filter(player=player)
+    serializer = PlayerRoomSerializer(player_rooms, many=True)
+    return Response(serializer.data)
