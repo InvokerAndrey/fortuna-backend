@@ -10,6 +10,9 @@ class PlayerTransaction(models.Model):
     admin = models.ForeignKey(to='users.Admin', on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
 
+    def __str__(self):
+        return f'{self.type} : {self.player}'
+
 
 class RoomTransaction(models.Model):
     type = models.IntegerField(choices=RoomTransactionEnum.choices())
@@ -17,3 +20,6 @@ class RoomTransaction(models.Model):
     player = models.ForeignKey(to='users.Player', on_delete=models.CASCADE)
     room = models.ForeignKey(to='rooms.PlayerRoom', on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f'{self.type} : {self.player}'

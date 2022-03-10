@@ -10,9 +10,9 @@ from core.views import BaseListView
 
 @api_view(['POST'])
 @permission_classes([IsAdminUser])
-def add_player_transaction(request, pk):
+def add_player_transaction(request):
     context = {
-        'player_id': pk,
+        'player_id': request.data['player_id'],
         'admin_user': request.user
     }
     serializer = PlayerTransactionSerializer(data=request.data, context=context)

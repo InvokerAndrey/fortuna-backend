@@ -14,10 +14,13 @@ class PlayerTransactionSerializer(serializers.ModelSerializer):
 
     def validate(self, data):
         if data['amount'] <= 0:
+            print('Нельзя переслать 0 или меньше денег')
             raise serializers.ValidationError('Нельзя переслать 0 или меньше денег')
         elif not Player.objects.filter(pk=self.context.get('player_id')).exists():
+            print('Нельзя провести транзакцию с несуществующим пользователем')
             raise serializers.ValidationError('Нельзя провести транзакцию с несуществующим пользователем')
         elif data['type'] not in PlayerTransactionEnum.values():
+            print('Неверный тип транзакции')
             raise serializers.ValidationError('Неверный тип транзакции')
 
         data['player'] = Player.objects.get(pk=self.context.get('player_id'))
