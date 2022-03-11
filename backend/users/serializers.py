@@ -77,3 +77,11 @@ class PlayerDetailsSerializer(serializers.ModelSerializer):
     class Meta:
         model = Player
         fields = ['id', 'user', 'rate', 'rooms', 'player_transactions', 'room_transactions']
+
+
+class PlayerForSessionSerializer(serializers.ModelSerializer):
+    user = UserSerializer()
+
+    class Meta:
+        model = Player
+        fields = ['id', 'user', 'rate']

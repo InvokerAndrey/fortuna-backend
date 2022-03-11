@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'rooms.apps.RoomsConfig',
     'transactions.apps.TransactionsConfig',
     'core.apps.CoreConfig',
+    'pokersessions.apps.PokersessionsConfig',
 ]
 
 MIDDLEWARE = [
