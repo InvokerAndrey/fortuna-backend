@@ -1,8 +1,9 @@
 from django.db import models
+from django.utils import timezone
 
 
 class Session(models.Model):
-    date = models.DateTimeField(auto_now_add=True)
+    date = models.DateTimeField(default=timezone.now)
     player = models.ForeignKey(to='users.Player', on_delete=models.CASCADE)
 
     def __str__(self):
@@ -12,8 +13,8 @@ class Session(models.Model):
 class RoomSession(models.Model):
     room = models.ForeignKey(to='rooms.PlayerRoom', on_delete=models.CASCADE)
     session = models.ForeignKey(Session, on_delete=models.CASCADE)
-    # Сколько денег осталось на балансе рума
-    balance = models.DecimalField(max_digits=12, decimal_places=2)
+    # Сколько денег выиграл/проиграл
+    result = models.DecimalField(max_digits=12, decimal_places=2)
 
     def __str__(self):
         return f'{self.room.room.name} : {self.session}'

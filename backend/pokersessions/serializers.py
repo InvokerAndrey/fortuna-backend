@@ -7,10 +7,16 @@ from rooms.serializers import PlayerRoomSerializer
 
 class SessionSerializer(serializers.ModelSerializer):
     player = PlayerForSessionSerializer()
+    result = serializers.SerializerMethodField()
+
+    def get_result(self, obj):
+        room_sessions = obj.roomsession_set.all()
+        results = [room_session.result for room_session in room_sessions]
+        return sum(results)
 
     class Meta:
         model = Session
-        fields = ['id', 'date', 'player']
+        fields = ['id', 'date', 'player', 'result']
 
 
 class RoomSessionSerializer(serializers.ModelSerializer):
@@ -18,7 +24,7 @@ class RoomSessionSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = RoomSession
-        fields = ['room', 'balance']
+        fields = ['id', 'room', 'result']
 
 
 class SessionDetailsSerializer(serializers.ModelSerializer):
