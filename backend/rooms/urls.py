@@ -10,4 +10,7 @@ urlpatterns = [
     path('<int:pk>/', views.RoomDetailView.as_view(), name='room'),
     path('<int:pk>/players/', views.get_room_players, name='room-players'),
     path('<int:pk>/delete/', views.delete_room, name='delete-room'),
+    path('player/<int:pk>/add/player-room/', views.add_player_room, name='add-player-room'),
+    path('player/<int:pk>/available/', views.get_available_rooms, name='available-rooms'),
+    path('player-room/<int:pk>/delete/', views.delete_player_room, name='delete-player-room'),
 ]

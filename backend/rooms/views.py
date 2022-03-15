@@ -5,7 +5,7 @@ from rest_framework.permissions import IsAdminUser, IsAuthenticated
 from rest_framework import status
 
 from .models import Room, PlayerRoom
-from .serializers import RoomSerializer, PlayerRoomSerializer
+from .serializers import RoomSerializer, PlayerRoomSerializer, AddPlayerRoomSerializer
 from core.views import BaseListView, BaseDetailView
 from users.models import Player
 from users.serializers import PlayerListSerializer
@@ -56,3 +56,36 @@ def get_player_rooms(request):
     player_rooms = PlayerRoom.objects.filter(player=player)
     serializer = PlayerRoomSerializer(player_rooms, many=True)
     return Response(serializer.data)
+
+
+@api_view(['POST'])
+@permission_classes([IsAdminUser])
+def add_player_room(request, pk):
+    print('DATA:', request.data)
+    context = {
+        'player_id': pk
+    }
+    serializer = AddPlayerRoomSerializer(data=request.data, context=context)
+    if serializer.is_valid():
+        serializer.save()
+        return Response(status=status.HTTP_201_CREATED)
+    return Response({'details': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['GET'])
+@permission_classes([IsAdminUser])
+def get_available_rooms(request, pk):
+    player = Player.objects.get(pk=pk)
+    player_rooms = player.playerroom_set.all()
+    player_rooms_names = [p_room.room.name for p_room in player_rooms]
+    available_rooms = Room.objects.exclude(name__in=player_rooms_names)
+    serializer = RoomSerializer(available_rooms, many=True)
+    return Response(serializer.data)
+
+
+@api_view(['DELETE'])
+@permission_classes([IsAdminUser])
+def delete_player_room(request, pk):
+    player_room = get_object_or_404(PlayerRoom, pk=pk)
+    player_room.delete()
+    return Response(status=status.HTTP_202_ACCEPTED)

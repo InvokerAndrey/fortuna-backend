@@ -13,8 +13,8 @@ class Session(models.Model):
 class RoomSession(models.Model):
     room = models.ForeignKey(to='rooms.PlayerRoom', on_delete=models.CASCADE)
     session = models.ForeignKey(Session, on_delete=models.CASCADE)
-    # Сколько денег выиграл/проиграл
-    result = models.DecimalField(max_digits=12, decimal_places=2)
+    # Сколько осталось в руме на балансе
+    balance = models.DecimalField(max_digits=12, decimal_places=2)
 
     def __str__(self):
         return f'{self.room.room.name} : {self.session}'

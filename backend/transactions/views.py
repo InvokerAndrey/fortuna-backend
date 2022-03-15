@@ -3,9 +3,15 @@ from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAdminUser, IsAuthenticated
 
-from .serializers import PlayerTransactionSerializer, RoomTransactionSerializer
+from .serializers import (
+    PlayerTransactionSerializer,
+    RoomTransactionSerializer,
+    GetPlayerTransactionsSerializer,
+    GetRoomTransactionsSerializer
+)
 from .models import RoomTransaction, PlayerTransaction
-from core.views import BaseListView
+from users.models import Player
+from core.views import BaseListView, Pagination
 
 
 @api_view(['POST'])
@@ -44,3 +50,25 @@ class RoomTransactionListView(BaseListView):
 class PlayerTransactionListView(BaseListView):
     model = PlayerTransaction
     serializer_class = PlayerTransactionSerializer
+
+
+@api_view(['GET'])
+@permission_classes([IsAdminUser])
+def get_player_player_transactions(request, pk):
+    paginator = Pagination()
+    player = Player.objects.get(pk=pk)
+    player_transactions = PlayerTransaction.objects.filter(player=player)
+    page = paginator.paginate_queryset(player_transactions, request)
+    serializer = GetPlayerTransactionsSerializer(page, many=True)
+    return paginator.get_paginated_response(serializer.data)
+
+
+@api_view(['GET'])
+@permission_classes([IsAdminUser])
+def get_player_room_transactions(request, pk):
+    paginator = Pagination()
+    player = Player.objects.get(pk=pk)
+    room_transactions = RoomTransaction.objects.filter(player=player)
+    page = paginator.paginate_queryset(room_transactions, request)
+    serializer = GetRoomTransactionsSerializer(page, many=True)
+    return paginator.get_paginated_response(serializer.data)

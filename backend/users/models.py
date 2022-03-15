@@ -29,6 +29,9 @@ class Player(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     # Доля профита игрока в %
     rate = models.IntegerField(default=40)
+    # Деньги, которые зависли у пользователя. К примеру он не может депнуть на рум,
+    # если ему до этого не зачислил деньги на игру админ
+    balance = models.DecimalField(max_digits=12, decimal_places=2, default=0)
 
     def __str__(self):
         return self.user.get_full_name()

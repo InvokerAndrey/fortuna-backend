@@ -28,6 +28,10 @@ class UserSerializerWithToken(UserSerializer):
 
 
 class UserTokenObtainPairSerializer(TokenObtainPairSerializer):
+    default_error_messages = {
+        'no_active_account': 'Wrong Email or Password'
+    }
+
     def validate(self, attrs):
         data = super().validate(attrs)
         serializer = UserSerializerWithToken(self.user, many=False)
@@ -76,7 +80,7 @@ class PlayerDetailsSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Player
-        fields = ['id', 'user', 'rate', 'rooms', 'player_transactions', 'room_transactions']
+        fields = ['id', 'user', 'rate', 'rooms', 'player_transactions', 'room_transactions', 'balance']
 
 
 class PlayerForSessionSerializer(serializers.ModelSerializer):
