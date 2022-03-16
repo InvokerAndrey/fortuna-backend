@@ -16,15 +16,16 @@ class PlayerTransactionSerializer(serializers.ModelSerializer):
 
     def validate(self, data):
         if data['amount'] <= 0:
-            raise serializers.ValidationError('Нельзя переслать 0 или меньше денег')
+            raise serializers.ValidationError('Cannot send 0 or less money')
         elif not Player.objects.filter(pk=self.context.get('player_id')).exists():
-            raise serializers.ValidationError('Нельзя провести транзакцию с несуществующим пользователем')
+            raise serializers.ValidationError('You cannot make a transaction with a non-existent user')
         elif data['type'] not in PlayerTransactionEnum.values():
-            raise serializers.ValidationError('Неверный тип транзакции')
+            raise serializers.ValidationError('Wrong transaction type')
 
         data['player'] = Player.objects.get(pk=self.context.get('player_id'))
-        if data['type'] == PlayerTransactionEnum.PLAYER_TO_ADMIN_PROFIT.value and data['amount'] > data['player'].balance:
-            raise serializers.ValidationError('Профит превышает допустимую сумму')
+        if (data['type'] == PlayerTransactionEnum.PLAYER_TO_ADMIN_PROFIT.value
+                and data['amount'] > data['player'].balance):
+            raise serializers.ValidationError('Profit exceeds the allowable amount')
 
         data['admin'] = self.context.get('admin_user').admin
         return data
@@ -60,15 +61,15 @@ class RoomTransactionSerializer(serializers.ModelSerializer):
     def validate(self, data):
 
         if data['amount'] <= 0:
-            raise serializers.ValidationError('Нельзя переслать 0 или меньше денег')
+            raise serializers.ValidationError('Cannot send 0 or less money')
         elif not PlayerRoom.objects.filter(id=self.context.get('player_room_id')).exists():
-            raise serializers.ValidationError('Нельзя провести транзакцию с несуществующим румом')
+            raise serializers.ValidationError('You cannot make a transaction with a non-existent room')
         elif data['type'] not in RoomTransactionEnum.values():
-            raise serializers.ValidationError('Неверный тип транзакции')
+            raise serializers.ValidationError('Wrong transaction type')
 
         data['player'] = self.context.get('player')
         if data['type'] == RoomTransactionEnum.PLAYER_TO_ROOM.value and data['amount'] > data['player'].balance:
-            raise serializers.ValidationError('Депозит превышает допустимую сумму')
+            raise serializers.ValidationError('Deposit exceeds allowed amount')
 
         data['room'] = PlayerRoom.objects.get(id=self.context.get('player_room_id'))
         return data

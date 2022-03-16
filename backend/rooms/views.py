@@ -61,7 +61,6 @@ def get_player_rooms(request):
 @api_view(['POST'])
 @permission_classes([IsAdminUser])
 def add_player_room(request, pk):
-    print('DATA:', request.data)
     context = {
         'player_id': pk
     }
@@ -69,7 +68,7 @@ def add_player_room(request, pk):
     if serializer.is_valid():
         serializer.save()
         return Response(status=status.HTTP_201_CREATED)
-    return Response({'details': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+    return Response({'detail': '\n'.join(serializer.errors['non_field_errors'])}, status=status.HTTP_400_BAD_REQUEST)
 
 
 @api_view(['GET'])

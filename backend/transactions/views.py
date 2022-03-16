@@ -25,7 +25,7 @@ def add_player_transaction(request):
     if serializer.is_valid():
         serializer.save()
         return Response(status=status.HTTP_201_CREATED)
-    return Response({'details': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+    return Response({'detail': '\n'.join(serializer.errors['non_field_errors'])}, status=status.HTTP_400_BAD_REQUEST)
 
 
 @api_view(['POST'])
@@ -39,7 +39,7 @@ def add_room_transaction(request):
     if serializer.is_valid():
         serializer.save()
         return Response(status=status.HTTP_201_CREATED)
-    return Response({'details': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+    return Response({'detail': '\n'.join(serializer.errors['non_field_errors'])}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class RoomTransactionListView(BaseListView):

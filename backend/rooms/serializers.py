@@ -25,11 +25,11 @@ class AddPlayerRoomSerializer(serializers.Serializer):
 
     def validate(self, data):
         if PlayerRoom.objects.filter(room__name=data['room_name']).exists():
-            raise serializers.ValidationError('Такой рум уже есть у игрока')
+            raise serializers.ValidationError('The player already has such a room')
         elif data['balance'] < 0:
-            raise serializers.ValidationError('Баланс не может быть отрицательным')
+            raise serializers.ValidationError('Balance cannot be negative')
         elif not Player.objects.filter(pk=self.context.get('player_id')).exists():
-            raise serializers.ValidationError('Такого пользователя не существует')
+            raise serializers.ValidationError('No such user exists')
 
         room = Room.objects.get(name=data['room_name'])
         del data['room_name']
@@ -39,4 +39,3 @@ class AddPlayerRoomSerializer(serializers.Serializer):
 
     def create(self, validated_data):
         return PlayerRoom.objects.create(**validated_data)
-

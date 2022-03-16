@@ -63,7 +63,7 @@ def register_player(request):
         serializer = PlayerDetailsSerializer(player, many=False)
         return Response(serializer.data)
     except IntegrityError:
-        message = {'details': 'Такой пользователь уже существует'}
+        message = {'detail': 'This user already exists'}
         return Response(message, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -89,7 +89,7 @@ def register_admin(request):
         serializer = AdminListSerializer(admin, many=False)
         return Response(serializer.data)
     except IntegrityError:
-        message = {'details': 'Такой пользователь уже существует'}
+        message = {'detail': 'This user already exists'}
         return Response(message, status=status.HTTP_400_BAD_REQUEST)
 
 
