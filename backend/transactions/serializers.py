@@ -2,10 +2,10 @@ from rest_framework import serializers
 from django.db import transaction
 
 from .models import PlayerTransaction, RoomTransaction
-from .enums import RoomTransactionEnum
+from .enums import RoomTransactionTypeEnum
 from users.models import Player, Admin
 from rooms.models import PlayerRoom
-from transactions.enums import PlayerTransactionEnum, RoomTransactionEnum
+from transactions.enums import PlayerTransactionTypeEnum, RoomTransactionTypeEnum
 
 
 class PlayerTransactionSerializer(serializers.ModelSerializer):
@@ -19,11 +19,11 @@ class PlayerTransactionSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError('Cannot send 0 or less money')
         elif not Player.objects.filter(pk=self.context.get('player_id')).exists():
             raise serializers.ValidationError('You cannot make a transaction with a non-existent user')
-        elif data['type'] not in PlayerTransactionEnum.values():
+        elif data['type'] not in PlayerTransactionTypeEnum.values():
             raise serializers.ValidationError('Wrong transaction type')
 
         data['player'] = Player.objects.get(pk=self.context.get('player_id'))
-        if (data['type'] == PlayerTransactionEnum.PLAYER_TO_ADMIN_PROFIT.value
+        if (data['type'] == PlayerTransactionTypeEnum.PLAYER_TO_ADMIN_PROFIT.value
                 and data['amount'] > data['player'].balance):
             raise serializers.ValidationError('Profit exceeds the allowable amount')
 
@@ -33,11 +33,11 @@ class PlayerTransactionSerializer(serializers.ModelSerializer):
     @transaction.atomic
     def create(self, validated_data):
         player_transaction = PlayerTransaction.objects.create(**validated_data)
-        if validated_data['type'] == PlayerTransactionEnum.ADMIN_TO_PLAYER_GAME.value:
+        if validated_data['type'] == PlayerTransactionTypeEnum.ADMIN_TO_PLAYER_GAME.value:
             transaction.on_commit(
                 lambda: self._update_player_balance(validated_data['player'], validated_data['amount'])
             )
-        elif validated_data['type'] == PlayerTransactionEnum.PLAYER_TO_ADMIN_PROFIT.value:
+        elif validated_data['type'] == PlayerTransactionTypeEnum.PLAYER_TO_ADMIN_PROFIT.value:
             transaction.on_commit(
                 lambda: self._update_player_balance(validated_data['player'], -validated_data['amount'])
             )
@@ -64,27 +64,29 @@ class RoomTransactionSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError('Cannot send 0 or less money')
         elif not PlayerRoom.objects.filter(id=self.context.get('player_room_id')).exists():
             raise serializers.ValidationError('You cannot make a transaction with a non-existent room')
-        elif data['type'] not in RoomTransactionEnum.values():
+        elif data['type'] not in RoomTransactionTypeEnum.values():
             raise serializers.ValidationError('Wrong transaction type')
 
         data['player'] = self.context.get('player')
-        if data['type'] == RoomTransactionEnum.PLAYER_TO_ROOM.value and data['amount'] > data['player'].balance:
+        if data['type'] == RoomTransactionTypeEnum.DEPOSIT.value and data['amount'] > data['player'].balance:
             raise serializers.ValidationError('Deposit exceeds allowed amount')
 
         data['room'] = PlayerRoom.objects.get(id=self.context.get('player_room_id'))
+        if data['type'] == RoomTransactionTypeEnum.WITHDRAWAL.value and data['room'].balance < data['amount']:
+            raise serializers.ValidationError('Withdrawal exceeds allowed amount')
         return data
 
     @transaction.atomic
     def create(self, validated_data):
         room_transaction = RoomTransaction.objects.create(**validated_data)
-        if validated_data['type'] == RoomTransactionEnum.PLAYER_TO_ROOM.value:
+        if validated_data['type'] == RoomTransactionTypeEnum.DEPOSIT.value:
             transaction.on_commit(
                 lambda: self._update_room_balance(validated_data['room'], validated_data['amount'])
             )
             transaction.on_commit(
                 lambda: self._update_player_balance(validated_data['player'], -validated_data['amount'])
             )
-        elif validated_data['type'] == RoomTransactionEnum.ROOM_TO_PLAYER.value:
+        elif validated_data['type'] == RoomTransactionTypeEnum.WITHDRAWAL.value:
             transaction.on_commit(
                 lambda: self._update_room_balance(validated_data['room'], -validated_data['amount'])
             )

@@ -10,6 +10,7 @@ from .serializers import (
     GetRoomTransactionsSerializer
 )
 from .models import RoomTransaction, PlayerTransaction
+from .enums import RoomTransactionSortEnum
 from users.models import Player
 from core.views import BaseListView, Pagination
 
@@ -43,8 +44,19 @@ def add_room_transaction(request):
 
 
 class RoomTransactionListView(BaseListView):
-    model = RoomTransaction
-    serializer_class = RoomTransactionSerializer
+    def get(self, request):
+        params = request.query_params
+        print(params)
+        sort_field = params.get('sort') or None
+        if sort_field:
+            sort_param = RoomTransactionSortEnum.get_sort_by_field(sort_field)
+            transaction_qs = RoomTransaction.objects.all().order_by(sort_param)
+        else:
+            transaction_qs = RoomTransaction.objects.all()
+        paginator = Pagination()
+        page = paginator.paginate_queryset(transaction_qs, request)
+        serializer = RoomTransactionSerializer(page, many=True)
+        return paginator.get_paginated_response(serializer.data)
 
 
 class PlayerTransactionListView(BaseListView):

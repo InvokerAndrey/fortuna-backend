@@ -18,12 +18,25 @@ class BaseEnum(enum.Enum):
         return None
 
 
-class PlayerTransactionEnum(BaseEnum):
+class PlayerTransactionTypeEnum(BaseEnum):
     ADMIN_TO_PLAYER_GAME = 1
     PLAYER_TO_ADMIN_PROFIT = 2
     ADMIN_TO_PLAYER_SALARY = 3
 
 
-class RoomTransactionEnum(BaseEnum):
-    PLAYER_TO_ROOM = 1
-    ROOM_TO_PLAYER = 2
+class RoomTransactionTypeEnum(BaseEnum):
+    DEPOSIT = 1
+    WITHDRAWAL = 2
+
+
+class RoomTransactionSortEnum(BaseEnum):
+    CREATED_AT = {
+        'field': 'created_at',
+        'sort_param': '-created_at'
+    }
+
+    @classmethod
+    def get_sort_by_field(cls, field_name):
+        for field in cls:
+            if field.value['field'] == field_name:
+                return field.value['sort_param']

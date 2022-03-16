@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from django.db import IntegrityError
+from django.db import IntegrityError, transaction
 
 from .models import Session, RoomSession
 from users.serializers import PlayerForSessionSerializer
@@ -13,8 +13,7 @@ class SessionSerializer(serializers.ModelSerializer):
 
     def get_result(self, obj):
         room_sessions = obj.roomsession_set.all()
-        # results = [room_session.result for room_session in room_sessions]
-        results = [1, 2, 3]
+        results = [room_session.result for room_session in room_sessions]
         return sum(results)
 
     class Meta:
@@ -27,7 +26,7 @@ class RoomSessionSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = RoomSession
-        fields = ['id', 'room', 'balance']
+        fields = ['id', 'room', 'balance', 'result']
 
 
 class SessionDetailsSerializer(serializers.ModelSerializer):
@@ -47,19 +46,40 @@ class SessionCreateSerializer(serializers.Serializer):
 
     def validate(self, data):
         data['player'] = self.context.get('player')
+
+        if len(data['room_sessions']) == 0:
+            raise serializers.ValidationError('Add at least one room session')
+
+        room_ids = [room_session['room_id'] for room_session in data['room_sessions']]
+        if len(room_ids) > len(set(room_ids)):
+            raise serializers.ValidationError('You have added 2 or more sessions for the same room')
+
         try:
             for room_session in data['room_sessions']:
-                room_session['room'] = PlayerRoom.objects.get(pk=room_session['room_id'])
+                room_session['player_room'] = PlayerRoom.objects.get(pk=room_session['room_id'])
+                if room_session['balance'] < 0:
+                    raise serializers.ValidationError('Room balance cannot be less then 0')
         except IntegrityError:
             raise serializers.ValidationError('Invalid room')
+
         return data
 
+    @transaction.atomic
     def create(self, validated_data):
         session = Session.objects.create(player=validated_data['player'])
+        room_session_results = []
         for room_session in validated_data['room_sessions']:
+            room_session_result = room_session['balance'] - room_session['player_room'].balance
+            room_session_results.append(room_session_result)
             RoomSession.objects.create(
-                room=room_session['room'],
+                room=room_session['player_room'],
                 session=session,
-                balance=room_session['balance']
+                balance=room_session['balance'],
+                result=room_session_result
             )
+            room_session['player_room'].balance = room_session['balance']
+            room_session['player_room'].save()
+
+        session.result = sum(room_session_results)
+        session.save()
         return session
