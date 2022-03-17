@@ -27,16 +27,3 @@ class PlayerTransactionTypeEnum(BaseEnum):
 class RoomTransactionTypeEnum(BaseEnum):
     DEPOSIT = 1
     WITHDRAWAL = 2
-
-
-class RoomTransactionSortEnum(BaseEnum):
-    CREATED_AT = {
-        'field': 'created_at',
-        'sort_param': '-created_at'
-    }
-
-    @classmethod
-    def get_sort_by_field(cls, field_name):
-        for field in cls:
-            if field.value['field'] == field_name:
-                return field.value['sort_param']
