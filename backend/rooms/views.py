@@ -31,6 +31,11 @@ class RoomDetailView(BaseDetailView):
         return Response(status=status.HTTP_201_CREATED)
 
 
+class PlayerRoomDetailView(BaseDetailView):
+    model = PlayerRoom
+    serializer_class = PlayerRoomSerializer
+
+
 @api_view(['GET'])
 @permission_classes([IsAdminUser])
 def get_room_players(request, pk):
