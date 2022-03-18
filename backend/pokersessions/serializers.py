@@ -18,7 +18,7 @@ class SessionSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Session
-        fields = ['id', 'date', 'player', 'result']
+        fields = ['id', 'created_at', 'player', 'result']
 
 
 class RoomSessionSerializer(serializers.ModelSerializer):
@@ -38,7 +38,7 @@ class SessionDetailsSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Session
-        fields = ['id', 'date', 'player', 'room_sessions']
+        fields = ['id', 'created_at', 'player', 'room_sessions']
 
 
 class SessionCreateSerializer(serializers.Serializer):

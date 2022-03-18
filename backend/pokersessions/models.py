@@ -3,7 +3,7 @@ from django.utils import timezone
 
 
 class Session(models.Model):
-    date = models.DateField(default=timezone.now)
+    created_at = models.DateField(default=timezone.now)
     player = models.ForeignKey(to='users.Player', on_delete=models.CASCADE)
     result = models.DecimalField(max_digits=12, decimal_places=2, blank=True, null=True)
 

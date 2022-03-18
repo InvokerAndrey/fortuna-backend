@@ -5,12 +5,18 @@ from rest_framework import status
 
 from .models import Session
 from .serializers import SessionSerializer, SessionDetailsSerializer, SessionCreateSerializer
-from core.views import BaseListView, BaseDetailView
+from .utils import get_session_qs
+from core.views import BaseListView, BaseDetailView, Pagination
 
 
 class SessionListView(BaseListView):
-    model = Session
-    serializer_class = SessionSerializer
+    def get(self, request):
+        params = request.query_params
+        qs = get_session_qs(Session, params)
+        paginator = Pagination()
+        page = paginator.paginate_queryset(qs, request)
+        serializer = SessionSerializer(page, many=True)
+        return paginator.get_paginated_response(serializer.data)
 
 
 class SessionDetailsView(BaseDetailView):
