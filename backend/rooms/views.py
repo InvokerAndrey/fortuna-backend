@@ -93,3 +93,14 @@ def delete_player_room(request, pk):
     player_room = get_object_or_404(PlayerRoom, pk=pk)
     player_room.delete()
     return Response(status=status.HTTP_202_ACCEPTED)
+
+
+@api_view(['PUT'])
+@permission_classes([IsAuthenticated])
+def update_player_room(request, pk):
+    data = request.data
+    player_room = PlayerRoom.objects.get(pk=pk)
+    player_room.nickname = data['nickname']
+    player_room.save()
+    serializer = PlayerRoomSerializer(player_room, many=False)
+    return Response(serializer.data)

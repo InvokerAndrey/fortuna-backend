@@ -14,4 +14,5 @@ urlpatterns = [
     path('player/<int:pk>/add/player-room/', views.add_player_room, name='add-player-room'),
     path('player/<int:pk>/available/', views.get_available_rooms, name='available-rooms'),
     path('player-room/<int:pk>/delete/', views.delete_player_room, name='delete-player-room'),
+    path('player-room/<int:pk>/update/', views.update_player_room, name='update-player-room'),
 ]
