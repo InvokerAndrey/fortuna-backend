@@ -10,15 +10,22 @@ from rooms.models import PlayerRoom
 class SessionSerializer(serializers.ModelSerializer):
     player = PlayerForSessionSerializer()
     result = serializers.SerializerMethodField()
+    profit = serializers.SerializerMethodField()
 
     def get_result(self, obj):
         room_sessions = obj.roomsession_set.all()
         results = [room_session.result for room_session in room_sessions]
         return sum(results)
 
+    def get_profit(self, obj):
+        sessions = Session.objects.filter(pk__lt=obj.pk, created_at__lte=obj.created_at)
+        results = [session.result for session in sessions]
+        results.append(obj.result)
+        return sum(results)
+
     class Meta:
         model = Session
-        fields = ['id', 'created_at', 'player', 'result']
+        fields = ['id', 'created_at', 'player', 'result', 'profit']
 
 
 class RoomSessionSerializer(serializers.ModelSerializer):
@@ -83,3 +90,18 @@ class SessionCreateSerializer(serializers.Serializer):
         session.result = sum(room_session_results)
         session.save()
         return session
+
+
+class RoomStatisticsSerializer(serializers.ModelSerializer):
+    created_at = serializers.DateField(source='session.created_at')
+    profit = serializers.SerializerMethodField()
+
+    def get_profit(self, obj):
+        sessions = RoomSession.objects.filter(pk__lt=obj.pk)
+        results = [session.result for session in sessions]
+        results.append(obj.result)
+        return sum(results)
+
+    class Meta:
+        model = RoomSession
+        fields = ['id', 'created_at', 'result', 'profit']

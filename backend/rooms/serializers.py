@@ -39,3 +39,9 @@ class AddPlayerRoomSerializer(serializers.Serializer):
 
     def create(self, validated_data):
         return PlayerRoom.objects.create(**validated_data)
+
+
+class PlayerRoomStatistics(serializers.ModelSerializer):
+    class Meta:
+        model = PlayerRoom
+        fields = ['id', 'profit', ]

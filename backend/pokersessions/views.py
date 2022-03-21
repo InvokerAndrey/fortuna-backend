@@ -3,10 +3,16 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework import status
 
-from .models import Session
-from .serializers import SessionSerializer, SessionDetailsSerializer, SessionCreateSerializer
+from .models import Session, RoomSession
+from .serializers import (
+    SessionSerializer,
+    SessionDetailsSerializer,
+    SessionCreateSerializer,
+    RoomStatisticsSerializer
+)
 from .utils import get_session_qs
 from core.views import BaseListView, BaseDetailView, Pagination
+from rooms.models import PlayerRoom
 
 
 class SessionListView(BaseListView):
@@ -37,3 +43,21 @@ def create_session(request):
         serializer.save()
         return Response(status=status.HTTP_201_CREATED)
     return Response({'detail': '\n'.join(serializer.errors['non_field_errors'])}, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_player_room_statistics(request, room_id):
+    player_room = PlayerRoom(pk=room_id)
+    room_sessions = RoomSession.objects.filter(room=player_room)
+    serializer = RoomStatisticsSerializer(room_sessions, many=True)
+    return Response(serializer.data)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_session_statistics(request):
+    player = request.user.player
+    sessions = Session.objects.filter(player=player)
+    serializer = SessionSerializer(sessions, many=True)
+    return Response(serializer.data)
