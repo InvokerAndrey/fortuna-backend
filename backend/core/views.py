@@ -18,10 +18,12 @@ class BaseListView(APIView):
     model = None
     serializer_class = None
     related_fields = []
+    order_by = None
 
     def get(self, request):
         paginator = Pagination()
         obj_qs = self.model.objects.select_related(*self.related_fields)
+        obj_qs = obj_qs.order_by(*self.order_by) if self.order_by else obj_qs
         page = paginator.paginate_queryset(obj_qs, request)
         serializer = self.serializer_class(page, many=True)
         return paginator.get_paginated_response(serializer.data)

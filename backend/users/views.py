@@ -27,6 +27,7 @@ class AdminListView(BaseListView):
     serializer_class = AdminListSerializer
     related_fields = ['user', 'fund']
     permission_classes = [IsAdminUser]
+    order_by = ['user__last_name']
 
 
 class PlayerListView(BaseListView):
@@ -34,6 +35,7 @@ class PlayerListView(BaseListView):
     serializer_class = PlayerListSerializer
     related_fields = ['user']
     permission_classes = [IsAdminUser]
+    order_by = ['user__last_name']
 
 
 class PlayerDetailView(BaseDetailView):
@@ -103,8 +105,8 @@ def delete_player(request, pk):
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
-def get_player_profile(request):
-    player = request.user.player
+def get_player_profile(request, pk):
+    player = User.objects.get(pk=pk).player
     serializer = PlayerDetailsSerializer(player, many=False)
     return Response(serializer.data)
 

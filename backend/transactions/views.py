@@ -12,7 +12,7 @@ from .serializers import (
 from .models import RoomTransaction, PlayerTransaction
 from .enums import RoomTransactionTypeEnum, PlayerTransactionTypeEnum
 from .utils import get_transaction_qs
-from users.models import Player
+from users.models import Player, User
 from core.views import BaseListView, Pagination
 
 
@@ -45,9 +45,10 @@ def add_room_transaction(request):
 
 
 class RoomTransactionListView(BaseListView):
-    def get(self, request):
+    def get(self, request, pk):
         params = request.query_params
-        qs = get_transaction_qs(RoomTransaction, RoomTransactionTypeEnum, params)
+        player = User.objects.get(pk=pk).player
+        qs = get_transaction_qs(RoomTransaction, RoomTransactionTypeEnum, player, params)
         paginator = Pagination()
         page = paginator.paginate_queryset(qs, request)
         serializer = RoomTransactionSerializer(page, many=True)
@@ -55,9 +56,10 @@ class RoomTransactionListView(BaseListView):
 
 
 class PlayerTransactionListView(BaseListView):
-    def get(self, request):
+    def get(self, request, pk):
         params = request.query_params
-        qs = get_transaction_qs(PlayerTransaction, PlayerTransactionTypeEnum, params)
+        player = User.objects.get(pk=pk).player
+        qs = get_transaction_qs(PlayerTransaction, PlayerTransactionTypeEnum, player, params)
         paginator = Pagination()
         page = paginator.paginate_queryset(qs, request)
         serializer = PlayerTransactionSerializer(page, many=True)

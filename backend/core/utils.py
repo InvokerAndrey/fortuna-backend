@@ -1,7 +1,7 @@
 from dateutil.parser import parse
 
 
-def get_qs_by_dates_from_params(model, params):
+def get_qs_by_dates_from_params(model, player, params):
     start_date = None
     end_date = None
 
@@ -18,13 +18,13 @@ def get_qs_by_dates_from_params(model, params):
             pass
 
     if all([start_date, end_date]):
-        qs = model.objects.filter(created_at__range=[start_date, end_date])
+        qs = model.objects.filter(created_at__range=[start_date, end_date], player=player)
     elif start_date:
-        qs = model.objects.filter(created_at__gte=start_date)
+        qs = model.objects.filter(created_at__gte=start_date, player=player)
     elif end_date:
-        qs = model.objects.filter(created_at__lte=end_date)
+        qs = model.objects.filter(created_at__lte=end_date, player=player)
     else:
-        qs = model.objects.all()
+        qs = model.objects.filter(player=player)
     return qs
 
 

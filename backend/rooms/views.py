@@ -7,7 +7,7 @@ from rest_framework import status
 from .models import Room, PlayerRoom
 from .serializers import RoomSerializer, PlayerRoomSerializer, AddPlayerRoomSerializer
 from core.views import BaseListView, BaseDetailView
-from users.models import Player
+from users.models import Player, User
 from users.serializers import PlayerListSerializer
 
 
@@ -56,8 +56,8 @@ def delete_room(request, pk):
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
-def get_player_rooms(request):
-    player = request.user.player
+def get_player_rooms(request, pk):
+    player = User.objects.get(pk=pk).player
     player_rooms = PlayerRoom.objects.filter(player=player)
     serializer = PlayerRoomSerializer(player_rooms, many=True)
     return Response(serializer.data)

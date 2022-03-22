@@ -1,8 +1,8 @@
 from core.utils import get_qs_by_dates_from_params, order_qs_from_params
 
 
-def get_transaction_qs(model, type_enum, params):
-    qs = get_qs_by_dates_from_params(model, params)
+def get_transaction_qs(model, type_enum, player, params):
+    qs = get_qs_by_dates_from_params(model, player, params)
     qs = order_qs_from_params(qs, params)
 
     try:

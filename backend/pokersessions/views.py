@@ -13,13 +13,14 @@ from .serializers import (
 from .utils import get_session_qs
 from core.views import BaseListView, BaseDetailView, Pagination
 from rooms.models import PlayerRoom
-from users.models import Player
+from users.models import User
 
 
 class SessionListView(BaseListView):
-    def get(self, request):
+    def get(self, request, pk):
+        player = User.objects.get(pk=pk).player
         params = request.query_params
-        qs = get_session_qs(Session, params)
+        qs = get_session_qs(Session, player, params)
         paginator = Pagination()
         page = paginator.paginate_queryset(qs, request)
         serializer = SessionSerializer(page, many=True)
@@ -33,12 +34,10 @@ class SessionDetailsView(BaseDetailView):
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
-def create_session(request):
+def create_session(request, pk):
     context = {
-        'player': request.user.player,
+        'player': User.objects.get(pk=pk).player,
     }
-    data = request.data
-    data['player'] = request.user.player
     serializer = SessionCreateSerializer(data=request.data, context=context)
     if serializer.is_valid():
         serializer.save()
@@ -57,17 +56,8 @@ def get_player_room_statistics(request, room_id):
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
-def get_session_statistics(request):
-    player = request.user.player
-    sessions = Session.objects.filter(player=player)
-    serializer = SessionSerializer(sessions, many=True)
-    return Response(serializer.data)
-
-
-@api_view(['GET'])
-@permission_classes([IsAdminUser])
-def get_session_statistics_for_admin(request, pk):
-    player = Player.objects.get(pk=pk)
+def get_session_statistics(request, pk):
+    player = User.objects.get(pk=pk).player
     sessions = Session.objects.filter(player=player)
     serializer = SessionSerializer(sessions, many=True)
     return Response(serializer.data)
