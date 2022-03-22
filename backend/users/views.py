@@ -108,3 +108,16 @@ def get_player_profile(request):
     serializer = PlayerDetailsSerializer(player, many=False)
     return Response(serializer.data)
 
+
+@api_view(['PUT'])
+@permission_classes([IsAdminUser])
+def update_player_info(request, pk):
+    data = request.data
+    player = Player.objects.get(pk=pk)
+    player.email = data['email']
+    player.user.first_name = data['first_name']
+    player.user.last_name = data['last_name']
+    player.rate = data['rate']
+    player.save()
+    serializer = PlayerDetailsSerializer(player, many=False)
+    return Response(serializer.data)

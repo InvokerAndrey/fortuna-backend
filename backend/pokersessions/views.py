@@ -1,4 +1,4 @@
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework import status
@@ -13,6 +13,7 @@ from .serializers import (
 from .utils import get_session_qs
 from core.views import BaseListView, BaseDetailView, Pagination
 from rooms.models import PlayerRoom
+from users.models import Player
 
 
 class SessionListView(BaseListView):
@@ -58,6 +59,15 @@ def get_player_room_statistics(request, room_id):
 @permission_classes([IsAuthenticated])
 def get_session_statistics(request):
     player = request.user.player
+    sessions = Session.objects.filter(player=player)
+    serializer = SessionSerializer(sessions, many=True)
+    return Response(serializer.data)
+
+
+@api_view(['GET'])
+@permission_classes([IsAdminUser])
+def get_session_statistics_for_admin(request, pk):
+    player = Player.objects.get(pk=pk)
     sessions = Session.objects.filter(player=player)
     serializer = SessionSerializer(sessions, many=True)
     return Response(serializer.data)

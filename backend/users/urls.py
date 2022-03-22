@@ -12,4 +12,5 @@ urlpatterns = [
     path('player/profile/', views.get_player_profile, name='player-profile'),
     path('player/<int:pk>/', views.PlayerDetailView.as_view(), name='player'),
     path('player/<int:pk>/delete/', views.delete_player, name='delete-player'),
+    path('player/<int:pk>/update/', views.update_player_info, name='update-player'),
 ]
