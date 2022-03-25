@@ -97,7 +97,7 @@ class RoomStatisticsSerializer(serializers.ModelSerializer):
     profit = serializers.SerializerMethodField()
 
     def get_profit(self, obj):
-        sessions = RoomSession.objects.filter(pk__lt=obj.pk)
+        sessions = RoomSession.objects.filter(pk__lt=obj.pk, room=obj.room)
         results = [session.result for session in sessions]
         results.append(obj.result)
         return sum(results)
