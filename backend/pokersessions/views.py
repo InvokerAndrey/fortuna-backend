@@ -21,10 +21,19 @@ class SessionListView(BaseListView):
         player = User.objects.get(pk=pk).player
         params = request.query_params
         qs = get_session_qs(Session, player, params)
+        parametrized_profit = sum([session.result for session in qs])
+        admin_part = parametrized_profit * (100 - player.rate) / 100 if parametrized_profit > 0 else 0
+        player_part = parametrized_profit * player.rate / 100 if parametrized_profit > 0 else 0
         paginator = Pagination()
         page = paginator.paginate_queryset(qs, request)
         serializer = SessionSerializer(page, many=True)
-        return paginator.get_paginated_response(serializer.data)
+        data = {
+            'parametrized_profit': parametrized_profit,
+            'admin_part': admin_part,
+            'player_part': player_part,
+            'sessions': serializer.data,
+        }
+        return paginator.get_paginated_response(data)
 
 
 class SessionDetailsView(BaseDetailView):
@@ -65,5 +74,8 @@ def get_player_room_statistics(request, player_id, room_id):
 def get_session_statistics(request, pk):
     player = User.objects.get(pk=pk).player
     sessions = Session.objects.filter(player=player)
-    serializer = SessionSerializer(sessions, many=True)
+    context = {
+        'player': player,
+    }
+    serializer = SessionSerializer(sessions, many=True, context=context)
     return Response(serializer.data)

@@ -48,6 +48,8 @@ class PlayerDetailView(BaseDetailView):
 @permission_classes([IsAdminUser])
 def register_player(request):
     data = request.data
+    if float(data['rate']) < 0 or float(data['rate']) > 100:
+        return Response({'detail': 'Rate must be in 0-100 range'}, status=status.HTTP_400_BAD_REQUEST)
     try:
         user = User.objects.create(
             email=data['email'],
@@ -73,7 +75,11 @@ def register_player(request):
 @permission_classes([IsAdminUser])
 def register_admin(request):
     data = request.data
+    if float(data['rate']) < 0 or float(data['rate']) > 100:
+        return Response({'detail': 'Rate must be in 0-100 range'}, status=status.HTTP_400_BAD_REQUEST)
     try:
+        if not data.get('fund'):
+            return Response({'detail': 'There is no any fund'}, status=status.HTTP_400_BAD_REQUEST)
         user = User.objects.create(
             email=data['email'],
             username=data['email'],

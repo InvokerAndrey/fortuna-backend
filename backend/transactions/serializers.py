@@ -23,8 +23,14 @@ class PlayerTransactionSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError('Wrong transaction type')
 
         data['player'] = Player.objects.get(pk=self.context.get('player_id'))
-        if (data['type'] == PlayerTransactionTypeEnum.PLAYER_TO_ADMIN_PROFIT.value
-                and data['amount'] > data['player'].balance):
+        if (
+            (
+                data['type'] == PlayerTransactionTypeEnum.PLAYER_TO_ADMIN_DUTY.value
+                or
+                data['type'] == PlayerTransactionTypeEnum.PLAYER_TO_ADMIN_PROFIT.value
+            )
+            and data['amount'] > data['player'].balance
+        ):
             raise serializers.ValidationError('Profit exceeds the allowable amount')
 
         data['admin'] = self.context.get('admin_user').admin
@@ -37,7 +43,11 @@ class PlayerTransactionSerializer(serializers.ModelSerializer):
             transaction.on_commit(
                 lambda: self._update_player_balance(validated_data['player'], validated_data['amount'])
             )
-        elif validated_data['type'] == PlayerTransactionTypeEnum.PLAYER_TO_ADMIN_PROFIT.value:
+        elif (
+                validated_data['type'] == PlayerTransactionTypeEnum.PLAYER_TO_ADMIN_DUTY.value
+                or
+                validated_data['type'] == PlayerTransactionTypeEnum.PLAYER_TO_ADMIN_PROFIT.value
+        ):
             transaction.on_commit(
                 lambda: self._update_player_balance(validated_data['player'], -validated_data['amount'])
             )

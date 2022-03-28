@@ -32,6 +32,10 @@ class Player(models.Model):
     # Деньги, которые зависли у пользователя. К примеру он не может депнуть на рум,
     # если ему до этого не зачислил деньги на игру админ
     balance = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    all_time_profit = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    salary = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    admin_profit_share = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    self_profit_share = models.DecimalField(max_digits=12, decimal_places=2, default=0)
 
     def __str__(self):
         return self.user.get_full_name()

@@ -23,6 +23,8 @@ def add_player_transaction(request):
         'player_id': request.data['player_id'],
         'admin_user': request.user
     }
+    print(context)
+    print(request.data)
     serializer = PlayerTransactionSerializer(data=request.data, context=context)
     if serializer.is_valid():
         serializer.save()

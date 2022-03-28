@@ -8,7 +8,7 @@ class Session(models.Model):
     result = models.DecimalField(max_digits=12, decimal_places=2, blank=True, null=True)
 
     def __str__(self):
-        return f'{self.date} : {self.player.user.get_full_name()}'
+        return f'{self.created_at} : {self.player.user.get_full_name()}'
 
 
 class RoomSession(models.Model):

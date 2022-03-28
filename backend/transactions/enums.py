@@ -20,8 +20,8 @@ class BaseEnum(enum.Enum):
 
 class PlayerTransactionTypeEnum(BaseEnum):
     ADMIN_TO_PLAYER_GAME = 1
-    PLAYER_TO_ADMIN_PROFIT = 2
-    ADMIN_TO_PLAYER_SALARY = 3
+    PLAYER_TO_ADMIN_DUTY = 2
+    PLAYER_TO_ADMIN_PROFIT = 3
 
 
 class RoomTransactionTypeEnum(BaseEnum):
