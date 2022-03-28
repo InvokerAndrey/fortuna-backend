@@ -95,6 +95,8 @@ class SessionCreateSerializer(serializers.Serializer):
 class RoomStatisticsSerializer(serializers.ModelSerializer):
     created_at = serializers.DateField(source='session.created_at')
     profit = serializers.SerializerMethodField()
+    room_name = serializers.CharField(source='room.room.name')
+    full_name = serializers.CharField(source='session.player.user.get_full_name')
 
     def get_profit(self, obj):
         sessions = RoomSession.objects.filter(pk__lt=obj.pk, room=obj.room)
@@ -104,4 +106,4 @@ class RoomStatisticsSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = RoomSession
-        fields = ['id', 'created_at', 'result', 'profit']
+        fields = ['id', 'created_at', 'result', 'profit', 'room_name', 'full_name']

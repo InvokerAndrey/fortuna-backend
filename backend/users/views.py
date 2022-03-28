@@ -116,10 +116,12 @@ def get_player_profile(request, pk):
 def update_player_info(request, pk):
     data = request.data
     player = Player.objects.get(pk=pk)
-    player.email = data['email']
-    player.user.first_name = data['first_name']
-    player.user.last_name = data['last_name']
+    user = player.user
+    user.email = data['email']
+    user.first_name = data['first_name']
+    user.last_name = data['last_name']
     player.rate = data['rate']
+    user.save()
     player.save()
     serializer = PlayerDetailsSerializer(player, many=False)
     return Response(serializer.data)

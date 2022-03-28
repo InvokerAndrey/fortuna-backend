@@ -13,7 +13,7 @@ from .serializers import (
 from .utils import get_session_qs
 from core.views import BaseListView, BaseDetailView, Pagination
 from rooms.models import PlayerRoom
-from users.models import User
+from users.models import User, Player
 
 
 class SessionListView(BaseListView):
@@ -47,11 +47,17 @@ def create_session(request, pk):
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
-def get_player_room_statistics(request, room_id):
-    player_room = PlayerRoom(pk=room_id)
+def get_player_room_statistics(request, player_id, room_id):
+    player = Player.objects.get(pk=player_id)
+    player_room = PlayerRoom.objects.get(pk=room_id)
     room_sessions = RoomSession.objects.filter(room=player_room)
     serializer = RoomStatisticsSerializer(room_sessions, many=True)
-    return Response(serializer.data)
+    data = {
+        'full_name': player.user.get_full_name(),
+        'room_name': player_room.room.name,
+        'statistics': serializer.data
+    }
+    return Response(data)
 
 
 @api_view(['GET'])
