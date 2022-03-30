@@ -29,9 +29,22 @@ class PlayerTransactionSerializer(serializers.ModelSerializer):
                 or
                 data['type'] == PlayerTransactionTypeEnum.PLAYER_TO_ADMIN_PROFIT.value
             )
-            and data['amount'] > data['player'].balance
+            and
+            data['amount'] > data['player'].balance
         ):
-            raise serializers.ValidationError('Profit exceeds the allowable amount')
+            raise serializers.ValidationError("Amount exceeds player's balance")
+        elif (
+            data['type'] == PlayerTransactionTypeEnum.PLAYER_TO_ADMIN_DUTY.value
+            and
+            data['amount'] > data['player'].duty
+        ):
+            raise serializers.ValidationError('')
+        elif (
+            data['type'] == PlayerTransactionTypeEnum.PLAYER_TO_ADMIN_PROFIT.value
+            and
+            data['amount'] != data['player'].admin_profit_share
+        ):
+            raise serializers.ValidationError(f"Profit duty is {data['player'].admin_profit_share} $")
 
         data['admin'] = self.context.get('admin_user').admin
         return data

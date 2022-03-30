@@ -104,9 +104,8 @@ class SessionCreateSerializer(serializers.Serializer):
         duty = serializer.data['duty']
         total_money = total_rooms_balance + player.balance
         if total_money - duty > 0:
-            print(total_money - duty)
-            player.admin_profit_share += player.all_time_profit * (100 - player.rate) / 100
-            player.self_profit_share += player.all_time_profit * player.rate / 100
+            player.admin_profit_share = player.all_time_profit * (100 - player.rate) / 100
+            player.self_profit_share = player.all_time_profit * player.rate / 100
         else:
             player.admin_profit_share = 0
             player.self_profit_share = 0
