@@ -38,11 +38,11 @@ class PlayerTransactionSerializer(serializers.ModelSerializer):
             and
             data['amount'] > data['player'].duty
         ):
-            raise serializers.ValidationError('')
+            raise serializers.ValidationError("Amount exceeds player's make up")
         elif (
             data['type'] == PlayerTransactionTypeEnum.PLAYER_TO_ADMIN_PROFIT.value
             and
-            data['amount'] != data['player'].admin_profit_share
+            data['amount'] > data['player'].admin_profit_share
         ):
             raise serializers.ValidationError(f"Profit duty is {data['player'].admin_profit_share} $")
 
@@ -56,18 +56,40 @@ class PlayerTransactionSerializer(serializers.ModelSerializer):
             transaction.on_commit(
                 lambda: self._update_player_balance(validated_data['player'], validated_data['amount'])
             )
-        elif (
-                validated_data['type'] == PlayerTransactionTypeEnum.PLAYER_TO_ADMIN_DUTY.value
-                or
-                validated_data['type'] == PlayerTransactionTypeEnum.PLAYER_TO_ADMIN_PROFIT.value
-        ):
+            transaction.on_commit(
+                lambda: self._update_player_duty(validated_data['player'], validated_data['amount'])
+            )
+        elif validated_data['type'] == PlayerTransactionTypeEnum.PLAYER_TO_ADMIN_DUTY.value:
             transaction.on_commit(
                 lambda: self._update_player_balance(validated_data['player'], -validated_data['amount'])
+            )
+            transaction.on_commit(
+                lambda: self._update_player_duty(validated_data['player'], -validated_data['amount'])
+            )
+        elif validated_data['type'] == PlayerTransactionTypeEnum.PLAYER_TO_ADMIN_PROFIT.value:
+            transaction.on_commit(
+                lambda: self._update_player_balance(validated_data['player'], -validated_data['amount'])
+            )
+            transaction.on_commit(
+                lambda: self._update_player_profit(validated_data['player'], validated_data['amount'])
             )
         return player_transaction
 
     def _update_player_balance(self, player, amount):
         player.balance += amount
+        player.save()
+
+    def _update_player_profit(self, player, amount):
+        percent = 100 * amount / player.admin_profit_share
+        player.admin_profit_share -= amount
+        player.current_profit -= player.current_profit * percent / 100
+        player.salary += player.self_profit_share * percent / 100
+        player.profit_to_admin += amount
+        player.self_profit_share -= player.self_profit_share * percent / 100
+        player.save()
+
+    def _update_player_duty(self, player, amount):
+        player.duty += amount
         player.save()
 
     class Meta:

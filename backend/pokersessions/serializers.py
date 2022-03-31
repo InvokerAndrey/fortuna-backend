@@ -99,13 +99,13 @@ class SessionCreateSerializer(serializers.Serializer):
 
     def _update_player(self, player, session):
         player.all_time_profit += session.result
+        player.current_profit += session.result
         serializer = PlayerDetailsSerializer(player, many=False)
         total_rooms_balance = serializer.data['total_rooms_balance']
-        duty = serializer.data['duty']
         total_money = total_rooms_balance + player.balance
-        if total_money - duty > 0:
-            player.admin_profit_share = player.all_time_profit * (100 - player.rate) / 100
-            player.self_profit_share = player.all_time_profit * player.rate / 100
+        if total_money - player.duty > 0:
+            player.admin_profit_share = player.current_profit * (100 - player.rate) / 100
+            player.self_profit_share = player.current_profit * player.rate / 100
         else:
             player.admin_profit_share = 0
             player.self_profit_share = 0

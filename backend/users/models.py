@@ -39,8 +39,14 @@ class Player(models.Model):
     # Профит за все время
     all_time_profit = models.DecimalField(max_digits=12, decimal_places=2, default=0)
 
+    # Текущий профит
+    current_profit = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+
     # Зп за все время
     salary = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+
+    # Принесенная прибыль админу за все время
+    profit_to_admin = models.DecimalField(max_digits=12, decimal_places=2, default=0)
 
     # Долг админу за профит
     admin_profit_share = models.DecimalField(max_digits=12, decimal_places=2, default=0)
