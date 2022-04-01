@@ -80,12 +80,11 @@ class PlayerTransactionSerializer(serializers.ModelSerializer):
         player.save()
 
     def _update_player_profit(self, player, amount):
-        percent = 100 * amount / player.admin_profit_share
-        player.admin_profit_share -= amount
-        player.current_profit -= player.current_profit * percent / 100
-        player.salary += player.self_profit_share * percent / 100
-        player.profit_to_admin += amount
-        player.self_profit_share -= player.self_profit_share * percent / 100
+        player.current_profit -= amount
+        player.admin_profit_share -= amount * (100 - player.rate) / 100
+        player.self_profit_share -= amount * player.rate / 100
+        player.profit_to_admin += amount * (100 - player.rate) / 100
+        player.salary += amount * player.rate / 100
         player.save()
 
     def _update_player_duty(self, player, amount):
