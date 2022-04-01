@@ -43,10 +43,23 @@ class UserTokenObtainPairSerializer(TokenObtainPairSerializer):
         return data
 
 
+class AdminsForFundSerializer(serializers.ModelSerializer):
+    user = UserSerializerWithToken()
+
+    class Meta:
+        model = Admin
+        fields = ['id', 'user', 'rate', 'profit_share']
+
+
 class FundSerializer(serializers.ModelSerializer):
+    admins = serializers.SerializerMethodField()
+
+    def get_admins(self, obj):
+        return AdminsForFundSerializer(obj.admin_set.all(), many=True).data
+
     class Meta:
         model = Fund
-        fields = ['id', 'balance']
+        fields = ['id', 'balance', 'admins']
 
 
 class AdminListSerializer(serializers.ModelSerializer):

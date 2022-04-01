@@ -14,6 +14,7 @@ from .serializers import (
     PlayerListSerializer,
     UserTokenObtainPairSerializer,
     PlayerDetailsSerializer,
+    FundSerializer,
 )
 from core.views import BaseListView, BaseDetailView
 
@@ -78,8 +79,10 @@ def register_admin(request):
     if float(data['rate']) < 0 or float(data['rate']) > 100:
         return Response({'detail': 'Rate must be in 0-100 range'}, status=status.HTTP_400_BAD_REQUEST)
     try:
-        if not data.get('fund'):
-            return Response({'detail': 'There is no any fund'}, status=status.HTTP_400_BAD_REQUEST)
+        fund = Fund.objects.first()
+    except (IntegrityError, Fund.DoesNotExist):
+        return Response({'detail': 'There is no any fund'}, status=status.HTTP_400_BAD_REQUEST)
+    try:
         user = User.objects.create(
             email=data['email'],
             username=data['email'],
@@ -88,10 +91,10 @@ def register_admin(request):
             is_staff=True,
             password=make_password(data['password']),
         )
-        fund = Fund.objects.first()
+
         admin = Admin.objects.create(
             user=user,
-            fund=data.get('fund') or fund,
+            fund=fund,
             rate=data['rate'],
         )
         serializer = AdminListSerializer(admin, many=False)
@@ -142,3 +145,11 @@ def change_player_password(request, pk):
         user.save()
         return Response(status=status.HTTP_202_ACCEPTED)
     return Response({'detail': 'Wrong password'}, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['GET'])
+@permission_classes([IsAdminUser])
+def get_fund_details(request):
+    fund = Fund.objects.first()
+    serializer = FundSerializer(fund, many=False)
+    return Response(serializer.data)

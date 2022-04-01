@@ -15,7 +15,7 @@ class Admin(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     fund = models.ForeignKey(Fund, on_delete=models.CASCADE)
     # Процент доли от общей прибыли в фонд
-    # По дефолу 33.33%,потому что фонд собираются организовывать 3 человек
+    # Доля фонда
     rate = models.DecimalField(max_digits=5, decimal_places=2, default=0)
     # Доля фонда одного админа за все время
     profit_share = models.DecimalField(max_digits=12, decimal_places=2, default=0)
