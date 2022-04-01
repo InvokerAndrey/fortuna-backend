@@ -131,3 +131,14 @@ def update_player_info(request, pk):
     player.save()
     serializer = PlayerDetailsSerializer(player, many=False)
     return Response(serializer.data)
+
+
+@api_view(['PUT'])
+@permission_classes([IsAuthenticated])
+def change_player_password(request, pk):
+    user = User.objects.get(pk=pk)
+    if user.check_password(request.data['password']):
+        user.password = make_password(request.data['new_password'])
+        user.save()
+        return Response(status=status.HTTP_202_ACCEPTED)
+    return Response({'detail': 'Wrong password'}, status=status.HTTP_400_BAD_REQUEST)
