@@ -42,9 +42,9 @@ class PlayerTransactionSerializer(serializers.ModelSerializer):
         elif (
             data['type'] == PlayerTransactionTypeEnum.PLAYER_TO_ADMIN_PROFIT.value
             and
-            data['amount'] > data['player'].admin_profit_share
+            data['amount'] > data['player'].current_profit
         ):
-            raise serializers.ValidationError(f"Profit duty is {data['player'].admin_profit_share} $")
+            raise serializers.ValidationError(f"Profit is {data['player'].current_profit} $")
 
         data['admin'] = self.context.get('admin_user').admin
         return data
