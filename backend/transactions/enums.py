@@ -27,3 +27,8 @@ class PlayerTransactionTypeEnum(BaseEnum):
 class RoomTransactionTypeEnum(BaseEnum):
     DEPOSIT = 1
     WITHDRAWAL = 2
+
+
+class FundTransactionTypeEnum(BaseEnum):
+    DEPOSIT = 1
+    WITHDRAWAL = 2

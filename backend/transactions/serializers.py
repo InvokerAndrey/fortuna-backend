@@ -1,11 +1,11 @@
 from rest_framework import serializers
 from django.db import transaction
 
-from .models import PlayerTransaction, RoomTransaction
+from .models import PlayerTransaction, RoomTransaction, FundTransaction
 from .enums import RoomTransactionTypeEnum
-from users.models import Player, Admin
+from users.models import Player, Admin, Fund
 from rooms.models import PlayerRoom
-from transactions.enums import PlayerTransactionTypeEnum, RoomTransactionTypeEnum
+from transactions.enums import PlayerTransactionTypeEnum, RoomTransactionTypeEnum, FundTransactionTypeEnum
 
 
 class PlayerTransactionSerializer(serializers.ModelSerializer):
@@ -45,6 +45,12 @@ class PlayerTransactionSerializer(serializers.ModelSerializer):
             data['amount'] > data['player'].current_profit
         ):
             raise serializers.ValidationError(f"Profit is {data['player'].current_profit} $")
+        elif (
+            data['type'] == PlayerTransactionTypeEnum.ADMIN_TO_PLAYER_GAME.value
+            and
+            data['amount'] > self.context.get('fund').balance
+        ):
+            raise serializers.ValidationError(f"Amount exceeds fund balance of {self.context.get('fund').balance}$")
 
         data['admin'] = self.context.get('admin_user').admin
         return data
@@ -59,6 +65,9 @@ class PlayerTransactionSerializer(serializers.ModelSerializer):
             transaction.on_commit(
                 lambda: self._update_player_duty(validated_data['player'], validated_data['amount'])
             )
+            transaction.on_commit(
+                lambda: self._update_fund(self.context.get('fund'), -validated_data['amount'])
+            )
         elif validated_data['type'] == PlayerTransactionTypeEnum.PLAYER_TO_ADMIN_DUTY.value:
             transaction.on_commit(
                 lambda: self._update_player_balance(validated_data['player'], -validated_data['amount'])
@@ -66,12 +75,17 @@ class PlayerTransactionSerializer(serializers.ModelSerializer):
             transaction.on_commit(
                 lambda: self._update_player_duty(validated_data['player'], -validated_data['amount'])
             )
+            transaction.on_commit(
+                lambda: self._update_fund(self.context.get('fund'), validated_data['amount'])
+            )
         elif validated_data['type'] == PlayerTransactionTypeEnum.PLAYER_TO_ADMIN_PROFIT.value:
             transaction.on_commit(
                 lambda: self._update_player_balance(validated_data['player'], -validated_data['amount'])
             )
             transaction.on_commit(
-                lambda: self._update_player_profit(validated_data['player'], validated_data['amount'])
+                lambda: self._update_player_profit(
+                    validated_data['player'], validated_data['amount'], self.context.get('fund')
+                )
             )
         return player_transaction
 
@@ -79,17 +93,23 @@ class PlayerTransactionSerializer(serializers.ModelSerializer):
         player.balance += amount
         player.save()
 
-    def _update_player_profit(self, player, amount):
+    def _update_player_profit(self, player, amount, fund):
         player.current_profit -= amount
         player.admin_profit_share -= amount * (100 - player.rate) / 100
         player.self_profit_share -= amount * player.rate / 100
         player.profit_to_admin += amount * (100 - player.rate) / 100
         player.salary += amount * player.rate / 100
         player.save()
+        fund.balance += amount * (100 - player.rate) / 100
+        fund.save()
 
     def _update_player_duty(self, player, amount):
         player.duty += amount
         player.save()
+
+    def _update_fund(self, fund, amount):
+        fund.balance += amount
+        fund.save()
 
     class Meta:
         model = PlayerTransaction
@@ -103,7 +123,6 @@ class RoomTransactionSerializer(serializers.ModelSerializer):
         return obj.room.room.name
 
     def validate(self, data):
-
         if data['amount'] <= 0:
             raise serializers.ValidationError('Cannot send 0 or less money')
         elif not PlayerRoom.objects.filter(id=self.context.get('player_room_id')).exists():
@@ -152,6 +171,44 @@ class RoomTransactionSerializer(serializers.ModelSerializer):
         fields = ['id', 'type', 'amount', 'room_name', 'created_at']
 
 
+class FundTransactionSerializer(serializers.ModelSerializer):
+    def validate(self, data):
+        if data['amount'] <= 0:
+            raise serializers.ValidationError('Cannot withdraw 0 or less money')
+        elif data['type'] not in FundTransactionTypeEnum.values():
+            raise serializers.ValidationError('Invalid type of transaction')
+        elif (
+            data['type'] == FundTransactionTypeEnum.WITHDRAWAL.value
+            and
+            data['amount'] > data['fund'].balance
+        ):
+            raise serializers.ValidationError(
+                f"Amount exceeds available fund balance {data['fund'].balance}$"
+            )
+        return data
+
+    @transaction.atomic
+    def create(self, validated_data):
+        transaction_ = FundTransaction.objects.create(**validated_data)
+        if transaction_.type == FundTransactionTypeEnum.WITHDRAWAL.value:
+            transaction.on_commit(
+                lambda: self._update_fund(validated_data['fund'], -validated_data['amount'])
+            )
+        elif transaction_.type == FundTransactionTypeEnum.DEPOSIT.value:
+            transaction.on_commit(
+                lambda: self._update_fund(validated_data['fund'], validated_data['amount'])
+            )
+        return transaction_
+
+    def _update_fund(self, fund, amount):
+        fund.balance += amount
+        fund.save()
+
+    class Meta:
+        model = FundTransaction
+        fields = ['id', 'type', 'amount', 'admin', 'fund', 'created_at']
+
+
 class GetPlayerTransactionsSerializer(serializers.ModelSerializer):
     admin_name = serializers.CharField(source='admin.user.get_full_name')
 
@@ -166,3 +223,11 @@ class GetRoomTransactionsSerializer(serializers.ModelSerializer):
     class Meta:
         model = RoomTransaction
         fields = ['id', 'type', 'amount', 'room_name', 'created_at']
+
+
+class GetFundTransactionsSerializer(serializers.ModelSerializer):
+    admin_name = serializers.CharField(source='admin.user.get_full_name')
+
+    class Meta:
+        model = FundTransaction
+        fields = ['id', 'type', 'amount', 'admin_name', 'fund', 'created_at']

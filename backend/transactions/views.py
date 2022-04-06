@@ -6,13 +6,15 @@ from rest_framework.permissions import IsAdminUser, IsAuthenticated
 from .serializers import (
     PlayerTransactionSerializer,
     RoomTransactionSerializer,
+    FundTransactionSerializer,
     GetPlayerTransactionsSerializer,
-    GetRoomTransactionsSerializer
+    GetRoomTransactionsSerializer,
+    GetFundTransactionsSerializer,
 )
-from .models import RoomTransaction, PlayerTransaction
-from .enums import RoomTransactionTypeEnum, PlayerTransactionTypeEnum
-from .utils import get_transaction_qs
-from users.models import Player, User
+from .models import RoomTransaction, PlayerTransaction, FundTransaction
+from .enums import RoomTransactionTypeEnum, PlayerTransactionTypeEnum, FundTransactionTypeEnum
+from .utils import get_transaction_qs, get_fund_transactions_qs
+from users.models import Player, User, Fund
 from core.views import BaseListView, Pagination
 
 
@@ -21,7 +23,8 @@ from core.views import BaseListView, Pagination
 def add_player_transaction(request):
     context = {
         'player_id': request.data['player_id'],
-        'admin_user': request.user
+        'admin_user': request.user,
+        'fund': Fund.objects.first()
     }
     serializer = PlayerTransactionSerializer(data=request.data, context=context)
     if serializer.is_valid():
@@ -41,6 +44,21 @@ def add_room_transaction(request):
     if serializer.is_valid():
         serializer.save()
         return Response(status=status.HTTP_201_CREATED)
+    return Response({'detail': '\n'.join(serializer.errors['non_field_errors'])}, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['POST'])
+@permission_classes([IsAdminUser])
+def add_fund_transaction(request):
+    data = request.data
+    data['admin'] = request.user.admin.id
+    data['fund'] = request.user.admin.fund.id
+    print(data)
+    serializer = FundTransactionSerializer(data=data)
+    if serializer.is_valid():
+        serializer.save()
+        return Response(status=status.HTTP_201_CREATED)
+    print(serializer.errors)
     return Response({'detail': '\n'.join(serializer.errors['non_field_errors'])}, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -66,6 +84,17 @@ class PlayerTransactionListView(BaseListView):
         return paginator.get_paginated_response(serializer.data)
 
 
+class FundTransactionListView(BaseListView):
+    def get(self, request):
+        params = request.query_params
+        fund = Fund.objects.first()
+        qs = get_fund_transactions_qs(FundTransaction, FundTransactionTypeEnum, fund, params)
+        paginator = Pagination()
+        page = paginator.paginate_queryset(qs, request)
+        serializer = FundTransactionSerializer(page, many=True)
+        return paginator.get_paginated_response(serializer.data)
+
+
 @api_view(['GET'])
 @permission_classes([IsAdminUser])
 def get_player_player_transactions(request, pk):
@@ -85,4 +114,15 @@ def get_player_room_transactions(request, pk):
     room_transactions = RoomTransaction.objects.filter(player=player)
     page = paginator.paginate_queryset(room_transactions, request)
     serializer = GetRoomTransactionsSerializer(page, many=True)
+    return paginator.get_paginated_response(serializer.data)
+
+
+@api_view(['GET'])
+@permission_classes([IsAdminUser])
+def get_fund_transactions(request):
+    paginator = Pagination()
+    fund = Fund.objects.first()
+    fund_transactions = FundTransaction.objects.filter(fund=fund)
+    page = paginator.paginate_queryset(fund_transactions, request)
+    serializer = GetFundTransactionsSerializer(page, many=True)
     return paginator.get_paginated_response(serializer.data)

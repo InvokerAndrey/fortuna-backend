@@ -1,7 +1,7 @@
 from django.db import models
 from django.utils import timezone
 
-from .enums import PlayerTransactionTypeEnum, RoomTransactionTypeEnum
+from .enums import PlayerTransactionTypeEnum, RoomTransactionTypeEnum, FundTransactionTypeEnum
 
 
 class PlayerTransaction(models.Model):
@@ -24,3 +24,11 @@ class RoomTransaction(models.Model):
 
     def __str__(self):
         return f'{self.type} : {self.player}'
+
+
+class FundTransaction(models.Model):
+    type = models.IntegerField(choices=FundTransactionTypeEnum.choices())
+    amount = models.DecimalField(max_digits=12, decimal_places=2)
+    fund = models.ForeignKey(to='users.Fund', on_delete=models.CASCADE)
+    admin = models.ForeignKey(to='users.Admin', on_delete=models.CASCADE)
+    created_at = models.DateField(default=timezone.now)
