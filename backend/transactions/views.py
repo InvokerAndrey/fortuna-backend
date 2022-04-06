@@ -53,12 +53,10 @@ def add_fund_transaction(request):
     data = request.data
     data['admin'] = request.user.admin.id
     data['fund'] = request.user.admin.fund.id
-    print(data)
     serializer = FundTransactionSerializer(data=data)
     if serializer.is_valid():
         serializer.save()
         return Response(status=status.HTTP_201_CREATED)
-    print(serializer.errors)
     return Response({'detail': '\n'.join(serializer.errors['non_field_errors'])}, status=status.HTTP_400_BAD_REQUEST)
 
 

@@ -52,6 +52,10 @@ class PlayerTransactionSerializer(serializers.ModelSerializer):
         ):
             raise serializers.ValidationError(f"Amount exceeds fund balance of {self.context.get('fund').balance}$")
 
+        if data['type'] == PlayerTransactionTypeEnum.PLAYER_TO_ADMIN_PROFIT.value:
+            data['admin_share'] = self._get_admin_share(data['player'], data['amount'])
+            data['player_share'] = self._get_player_share(data['player'], data['amount'])
+
         data['admin'] = self.context.get('admin_user').admin
         return data
 
@@ -89,16 +93,22 @@ class PlayerTransactionSerializer(serializers.ModelSerializer):
             )
         return player_transaction
 
+    def _get_player_share(self, player, amount):
+        return amount * player.rate / 100
+
+    def _get_admin_share(self, player, amount):
+        return amount * (100 - player.rate) / 100
+
     def _update_player_balance(self, player, amount):
         player.balance += amount
         player.save()
 
     def _update_player_profit(self, player, amount, fund):
         player.current_profit -= amount
-        player.admin_profit_share -= amount * (100 - player.rate) / 100
-        player.self_profit_share -= amount * player.rate / 100
-        player.profit_to_admin += amount * (100 - player.rate) / 100
-        player.salary += amount * player.rate / 100
+        player.admin_profit_share -= self._get_admin_share(player, amount)
+        player.self_profit_share -= self._get_player_share(player, amount)
+        player.profit_to_admin += self._get_admin_share(player, amount)
+        player.salary += self._get_player_share(player, amount)
         player.save()
         fund.balance += amount * (100 - player.rate) / 100
         fund.save()
@@ -113,7 +123,7 @@ class PlayerTransactionSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = PlayerTransaction
-        fields = ['id', 'type', 'amount', 'admin', 'created_at']
+        fields = ['id', 'type', 'amount', 'admin', 'created_at', 'admin_share', 'player_share']
 
 
 class RoomTransactionSerializer(serializers.ModelSerializer):

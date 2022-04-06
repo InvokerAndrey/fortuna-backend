@@ -11,6 +11,10 @@ class PlayerTransaction(models.Model):
     admin = models.ForeignKey(to='users.Admin', on_delete=models.CASCADE)
     created_at = models.DateField(default=timezone.now)
 
+    # type == PLAYER_TO_ADMIN_PROFIT
+    admin_share = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    player_share = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+
     def __str__(self):
         return f'{self.type} : {self.player}'
 
