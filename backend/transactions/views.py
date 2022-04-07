@@ -7,14 +7,11 @@ from .serializers import (
     PlayerTransactionSerializer,
     RoomTransactionSerializer,
     FundTransactionSerializer,
-    GetPlayerTransactionsSerializer,
-    GetRoomTransactionsSerializer,
-    GetFundTransactionsSerializer,
 )
 from .models import RoomTransaction, PlayerTransaction, FundTransaction
 from .enums import RoomTransactionTypeEnum, PlayerTransactionTypeEnum, FundTransactionTypeEnum
 from .utils import get_transaction_qs, get_fund_transactions_qs
-from users.models import Player, User, Fund
+from users.models import User, Fund
 from core.views import BaseListView, Pagination
 
 
@@ -57,6 +54,7 @@ def add_fund_transaction(request):
     if serializer.is_valid():
         serializer.save()
         return Response(status=status.HTTP_201_CREATED)
+    print(serializer.errors)
     return Response({'detail': '\n'.join(serializer.errors['non_field_errors'])}, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -91,36 +89,3 @@ class FundTransactionListView(BaseListView):
         page = paginator.paginate_queryset(qs, request)
         serializer = FundTransactionSerializer(page, many=True)
         return paginator.get_paginated_response(serializer.data)
-
-
-@api_view(['GET'])
-@permission_classes([IsAdminUser])
-def get_player_player_transactions(request, pk):
-    paginator = Pagination()
-    player = Player.objects.get(pk=pk)
-    player_transactions = PlayerTransaction.objects.filter(player=player)
-    page = paginator.paginate_queryset(player_transactions, request)
-    serializer = GetPlayerTransactionsSerializer(page, many=True)
-    return paginator.get_paginated_response(serializer.data)
-
-
-@api_view(['GET'])
-@permission_classes([IsAdminUser])
-def get_player_room_transactions(request, pk):
-    paginator = Pagination()
-    player = Player.objects.get(pk=pk)
-    room_transactions = RoomTransaction.objects.filter(player=player)
-    page = paginator.paginate_queryset(room_transactions, request)
-    serializer = GetRoomTransactionsSerializer(page, many=True)
-    return paginator.get_paginated_response(serializer.data)
-
-
-@api_view(['GET'])
-@permission_classes([IsAdminUser])
-def get_fund_transactions(request):
-    paginator = Pagination()
-    fund = Fund.objects.first()
-    fund_transactions = FundTransaction.objects.filter(fund=fund)
-    page = paginator.paginate_queryset(fund_transactions, request)
-    serializer = GetFundTransactionsSerializer(page, many=True)
-    return paginator.get_paginated_response(serializer.data)

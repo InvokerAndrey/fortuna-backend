@@ -2,8 +2,7 @@ from rest_framework import serializers
 from django.db import transaction
 
 from .models import PlayerTransaction, RoomTransaction, FundTransaction
-from .enums import RoomTransactionTypeEnum
-from users.models import Player, Admin, Fund
+from users.models import Player
 from rooms.models import PlayerRoom
 from transactions.enums import PlayerTransactionTypeEnum, RoomTransactionTypeEnum, FundTransactionTypeEnum
 
@@ -182,6 +181,11 @@ class RoomTransactionSerializer(serializers.ModelSerializer):
 
 
 class FundTransactionSerializer(serializers.ModelSerializer):
+    admin_name = serializers.SerializerMethodField()
+
+    def get_admin_name(self, obj):
+        return obj.admin.user.get_full_name()
+
     def validate(self, data):
         if data['amount'] <= 0:
             raise serializers.ValidationError('Cannot withdraw 0 or less money')
@@ -216,28 +220,4 @@ class FundTransactionSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = FundTransaction
-        fields = ['id', 'type', 'amount', 'admin', 'fund', 'created_at']
-
-
-class GetPlayerTransactionsSerializer(serializers.ModelSerializer):
-    admin_name = serializers.CharField(source='admin.user.get_full_name')
-
-    class Meta:
-        model = PlayerTransaction
-        fields = ['id', 'type', 'amount', 'admin_name', 'created_at']
-
-
-class GetRoomTransactionsSerializer(serializers.ModelSerializer):
-    room_name = serializers.CharField(source='room.room.name')
-
-    class Meta:
-        model = RoomTransaction
-        fields = ['id', 'type', 'amount', 'room_name', 'created_at']
-
-
-class GetFundTransactionsSerializer(serializers.ModelSerializer):
-    admin_name = serializers.CharField(source='admin.user.get_full_name')
-
-    class Meta:
-        model = FundTransaction
-        fields = ['id', 'type', 'amount', 'admin_name', 'fund', 'created_at']
+        fields = ['id', 'type', 'amount', 'admin', 'admin_name', 'fund', 'created_at']
