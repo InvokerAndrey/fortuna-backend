@@ -6,8 +6,6 @@ from transactions.serializers import PlayerTransactionSerializer, RoomTransactio
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
 from rooms.models import PlayerRoom
-from transactions.enums import PlayerTransactionTypeEnum
-from transactions.models import PlayerTransaction
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -134,3 +132,23 @@ class PlayerForSessionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Player
         fields = ['id', 'user', 'rate']
+
+
+class AdminDetailsSerializer(serializers.ModelSerializer):
+    user = UserSerializerWithToken()
+    player_transactions = serializers.SerializerMethodField()
+    fund_balance = serializers.DecimalField(source='fund.balance', max_digits=12, decimal_places=2)
+    logged = serializers.SerializerMethodField()
+
+    def get_player_transactions(self, obj):
+        return PlayerTransactionSerializer(obj.playertransaction_set.all(), many=True).data
+
+    def get_logged(self, obj):
+        user = self.context.get('user')
+        if obj.user.id == user.id:
+            return True
+        return False
+
+    class Meta:
+        model = Admin
+        fields = ['id', 'user', 'player_transactions', 'fund_balance', 'rate', 'profit_share', 'logged']

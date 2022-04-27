@@ -15,6 +15,7 @@ from .serializers import (
     UserTokenObtainPairSerializer,
     PlayerDetailsSerializer,
     FundSerializer,
+    AdminDetailsSerializer,
 )
 from core.views import BaseListView, BaseDetailView
 
@@ -117,6 +118,14 @@ def delete_player(request, pk):
 def get_player_profile(request, pk):
     player = User.objects.get(pk=pk).player
     serializer = PlayerDetailsSerializer(player, many=False)
+    return Response(serializer.data)
+
+
+@api_view(['GET'])
+@permission_classes([IsAdminUser])
+def get_admin_profile(request, pk):
+    admin = Admin.objects.get(pk=pk)
+    serializer = AdminDetailsSerializer(admin, many=False, context={'user': request.user})
     return Response(serializer.data)
 
 

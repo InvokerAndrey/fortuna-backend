@@ -9,6 +9,7 @@ urlpatterns = [
     path('admin/register/', views.register_admin, name='register-admin'),
     path('admin/list/', views.AdminListView.as_view(), name='admins'),
     path('player/list/', views.PlayerListView.as_view(), name='players'),
+    path('admin/<int:pk>/profile/', views.get_admin_profile, name='admin-profile'),
     path('player/user/<int:pk>/profile/', views.get_player_profile, name='player-profile'),
     path('player/user/<int:pk>/profile/change-password/', views.change_player_password, name='player-profile'),
     path('player/<int:pk>/', views.PlayerDetailView.as_view(), name='player'),
